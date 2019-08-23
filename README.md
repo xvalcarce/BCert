@@ -2,7 +2,7 @@
 
 [license]: https://img.shields.io/badge/License-BSD--2-blue.svg
 
-![logo](https://valcarce.fr/img/bcert_logo.png =60x) BCert
+![logo](https://valcarce.fr/img/bcert_logo.png) BCert
 =====
 
 BCert provide a Python implementation for bound certificate of Lipschitz function on a compact space.
