@@ -6,4 +6,4 @@ from .bcert import CompactSpace, FunLipschitz
 # Main function containing the ecursive algorithm for the bound certification
 from .bcert import boundCert
 
-__version__ = "0.0.1-4"
+__version__ = "0.0.1"
