@@ -38,7 +38,7 @@ class CompactSpace(object):
             return self.discretized_symmetric(step)
         elif type(step) is np.ndarray:
             return self.discretized_asymmetric(step)
-        
+
     def discretized_symmetric(self, step):
         X = np.meshgrid(*[np.arange(b[0],b[1]+step,step) for b in self.__bound])
         grid = np.array([x.ravel() for x in X]).T
@@ -76,13 +76,12 @@ def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
         if depth % verbose:
             print("Depth {}, step is {}, max_function {}".format(depth, delta,max_f))
     for e,g in enumerate(grid):
-        if exclude_element:
-            if np.array([(e==_).all() for _ in exclude_element]).any():
+        if type(exclude_element) is np.ndarray:
+            if np.array([(g==_).all() for _ in exclude_element]).any():
                 continue
         eval_f = fun.f(g)
-        if eval_f > lmbd:
-            print("Exceed {}, reach {} at grid element {}, certification failed.".format(lmbd, eval_f, g))
-            break
+        if eval_f >= lmbd:
+            raise Exception("Exceed or found {}: reach {} at grid element {}, certification failed.".format(lmbd, eval_f, g))
         evol_f = np.array([eval_f+(step*df/2) for df in fun.b_df])
         exceed_lmbd = np.where(evol_f > lmbd)[0]
         if exceed_lmbd.size:

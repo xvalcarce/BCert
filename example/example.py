@@ -25,6 +25,6 @@ if __name__ == "__main__":
     exclude = np.array([[0,np.pi/2],[2*np.pi,np.pi/2]])
     
     try:
-        f_max, x_max = bc.boundCert(fun, space, lmbd, step)
+        f_max, x_max = bc.boundCert(fun, space, lmbd, step, exclude_element=exclude)
     except:
-        print("Failed.")
+        print("Certification failed.")
