@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import os
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
@@ -62,7 +63,7 @@ class CompactSpace(object):
         return grid
 
 
-def boundCert(fun, space, lmbd, step, **kwargs):
+def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
     depth = kwargs.get("depth", 0)
     verbose = kwargs.get("verbose",0)
     max_depth = kwargs.get("max_depth",-1)
@@ -70,7 +71,6 @@ def boundCert(fun, space, lmbd, step, **kwargs):
     g_max = kwargs.get("g_max", None)
     direction = kwargs.get("direction", None)
     elem = kwargs.get("elem", None)
-    exclude_element= kwargs.get("exclude_element",None)
     grid = space.discretized(step) if depth == 0 else space.discr_element(elem, direction, step/2)
     if verbose != 0:
         if depth % verbose:
@@ -86,7 +86,8 @@ def boundCert(fun, space, lmbd, step, **kwargs):
         evol_f = np.array([eval_f+(step*df/2) for df in fun.b_df])
         exceed_lmbd = np.where(evol_f > lmbd)[0]
         if exceed_lmbd.size:
-            f_max_tmp, g_max_tmp = boundCert(fun, space, lmbd, step/2, f_max=f_max, g_max=g_max, depth=depth+1, direction=exceed_lmbd, elem=g)
+            f_max_tmp, g_max_tmp = boundCert(fun, space, lmbd, step/2, exclude_element=exclude_element,
+                    f_max=f_max, g_max=g_max, depth=depth+1, direction=exceed_lmbd, elem=g)
             if f_max_tmp > f_max:
                 f_max = f_max_tmp
                 g_max = g_max_tmp
@@ -98,3 +99,18 @@ def boundCert(fun, space, lmbd, step, **kwargs):
         print("Maximum value found {} for x={}".format(f_max,g_max))
         print("Certification sucessfull.")
     return f_max, g_max
+
+def boundCertPar(fun, bound, lmbd, step, threads=os.cpu_count(), exclude_element=None):
+    bound_max = np.argmax([b[1]-b[0] for b in bound])
+    bound_subdiv = bound[bound_max][1]/threads
+    bound_div = [bound[:bound_max] + [[bound_subdiv*_, bound_subdiv*(_+1)]] 
+            + bound[bound_max+1:] for _ in range(threads)]
+    if step >= bound_max:
+        step = bound_max/2
+        print("Step larger than bound_subdiv, changing it's value to {}".format(step))
+    spaces = [CompactSpace(np.array(b)) for b in bound_div]
+    with Pool(processes=threads) as pool:
+        res = pool.starmap(boundCert, [(fun, s, lmbd, step, exclude_element) for s in spaces])
+        print("Found max:\n",res)
+        print("Certified.\n")
+        return res
