@@ -205,8 +205,8 @@ def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
     return f_max, g_max
 
 def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
-    """ Parallelization of the `boundCert` function. This will subvide the domain
-    in direction `0` according to `threads`.
+    """ Parallelization of the `boundCert` function. This will subvide in `threads` the domain,
+    this in the direction with the greatest distance between boundaries.
 
     Parameters
     ----------
@@ -237,11 +237,10 @@ def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
             "This might occure when using virtualization.")
     bound_max = np.argmax([b[1]-b[0] for b in bound])
     bound_subdiv = bound[bound_max][1]/threads
-    bound_div = [list(bound[:bound_max]) + [[bound_subdiv*_, bound_subdiv*(_+1)]] 
-            + list(bound[bound_max+1:]) for _ in range(threads)]
-    print(bound_div)
-    if step > bound_max:
-        step = bound_max/2
+    bound_div = [bound[:bound_max].tolist() + [[bound_subdiv*_, bound_subdiv*(_+1)]] 
+            + bound[bound_max+1:].tolist() for _ in range(threads)]
+    if step > bound_subdiv:
+        step = bound_subdiv/2
         print("Step larger than bound_subdiv, changing it's value to {}".format(step))
     spaces = [CompactSpace(np.array(b)) for b in bound_div]
     with Pool(processes=threads) as pool:
