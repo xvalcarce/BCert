@@ -3,4 +3,4 @@
 *.egg
 build
 dist
-bcert_logo.*
+bcert_logo.svg
