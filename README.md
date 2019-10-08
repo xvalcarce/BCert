@@ -22,6 +22,17 @@ You will need to have at least the following Python packages installed:
 If you are installing BCert manually, you can choose between [development version](https://gitlab.com/plut0n/bcert/tree/master) or [source releases](https://gitlab.com/plut0n/bcert/tags).  
 You can then install BCert using ``python setup.py install``.  
 
+Usage
+-----
+
+### Examples
+
+We provide three main examples exposing the structure of BCert and explicitely showing an how-to use. These examples can be found in the [example folder](https://gitlab.com/plut0n/bcert/tree/master/example) of this repository under `bcert_*`.
+
+### Online documentation
+
+API documentation can be found online, and up-to-date on [gitlab pages](https://plut0n.gitlab.io/bcert)
+
 License
 -------
 
