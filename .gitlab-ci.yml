@@ -22,7 +22,7 @@ doctest:
 pypi:
     stage: deploy
     before_script:
-        - pacman -Syu --noconfirm git twine
+        - pacman -Syu --noconfirm git twine python-numpy
     variables:
         USERNAME: $PYPI_USERNAME
         PASSWORD: $PYPI_PASSWORD
