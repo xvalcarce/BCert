@@ -205,7 +205,7 @@ def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
     return f_max, g_max
 
 def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
-    """ Parallelzation of the `boundCert` function. This will subvide the domain
+    """ Parallelization of the `boundCert` function. This will subvide the domain
     in direction `0` according to `threads`.
 
     Parameters
@@ -233,8 +233,8 @@ def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
             threads = os.cpu_count()
         except:
             threads = 1
-            print("Couldn't use automatic number of thread detection. This might
-                occure when using virtualization")
+            print("Couldn't use automatic number of thread detection.",
+            "This might occure when using virtualization.")
     bound_max = np.argmax([b[1]-b[0] for b in bound])
     bound_subdiv = bound[bound_max][1]/threads
     bound_div = [list(bound[:bound_max]) + [[bound_subdiv*_, bound_subdiv*(_+1)]] 
@@ -245,7 +245,37 @@ def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
         print("Step larger than bound_subdiv, changing it's value to {}".format(step))
     spaces = [CompactSpace(np.array(b)) for b in bound_div]
     with Pool(processes=threads) as pool:
-        res = pool.starmap(boundCert, [(fun, s, lmbd, step, exclude_element) for s in spaces])
+        res = pool.starmap(boundCert, [(fun, s, lmbd, step,
+            exclude_element) for s in spaces])
+        print("Found max:\n",res)
+        print("Certified.\n")
+        return res
+
+def boundCertUserPar(fun, bounds, lmbd, step, exclude_element=None):
+    """ Parallelization of the `boundCert` function. One thread per provided bound.
+
+    Parameters
+    ----------
+    fun : bcert.FunLipschitz
+        Function to certify the bound on.
+    bounds : numpy.ndarray or list
+        List of bounds -- 3D-array -- to create compact spaces from each
+        of the bound from the BCert class.
+    step : int
+        Distance between first neighbors grid element.
+    exclude_elem : None or numpy.ndarray
+        2D-array, each element are point to exclude from the grid. Default `None`.
+
+    Returns
+    -------
+    res : list
+        List of output of `boundCert` for every subdomain.
+    """
+    threads = len(bounds)
+    spaces = [CompactSpace(b) for b in bounds]
+    with Pool(processes=threads) as pool:
+        res = pool.starmap(boundCert, [(fun, space, lmbd, step,
+            exclude_element) for space in spaces])
         print("Found max:\n",res)
         print("Certified.\n")
         return res
