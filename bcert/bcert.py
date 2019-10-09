@@ -148,7 +148,8 @@ class CompactSpace(object):
         return np.array(grid)
 
 
-def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
+def boundCert(fun, space, lmbd, step, exclude_element=None, 
+        thread=0, verbose=0, **kwargs):
     """ Certification of an upper bound of a function with a bounded gradient.
 
     Parameters
@@ -161,6 +162,10 @@ def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
         Distance between first neighbors grid element.
     exclude_elem : None or numpy.ndarray
         2D-array, each element are point to exclude from the grid. Default `None`.
+    thread : int
+        Corresponding thread when used from parallelization.
+    verbose : int
+        Verbose each `verbose` element of the discretized space.
 
     Returns
     -------
@@ -170,19 +175,17 @@ def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
         Point for which `f_max` was obtain.
     """
     depth = kwargs.get("depth", 0)
-    verbose = kwargs.get("verbose",0)
     max_depth = kwargs.get("max_depth",-1)
     f_max = kwargs.get("f_max", -np.inf)
     g_max = kwargs.get("g_max", None)
     elem = kwargs.get("elem", None)
     grid = space.discretized(step) if depth == 0 else space.discr_element(elem, step/2)
-    if verbose != 0:
-        if depth % verbose:
-            print("Depth {}, step is {}, max_function {}".format(depth, delta,max_f))
     for e,g in enumerate(grid):
         if type(exclude_element) is np.ndarray:
             if np.array([(g==_).all() for _ in exclude_element]).any():
                 continue
+        if (verbose != 0) and (depth == 0) and not (e % verbose):
+            print("{} : {}  {}".format(thread,e,g))
         eval_f = fun.f(g)
         if eval_f >= lmbd:
             raise Exception("Exceed or found {}: reach {} at grid element {}, certification failed.".format(lmbd, eval_f, g))
@@ -190,7 +193,7 @@ def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
         exceed_lmbd = evol_f > lmbd
         if exceed_lmbd:
             f_max_tmp, g_max_tmp = boundCert(fun, space, lmbd, step/2,
-                    exclude_element=exclude_element, f_max=f_max, 
+                    exclude_element=exclude_element, thread=thread, verbose=verbose, f_max=f_max, 
                     g_max=g_max, depth=depth+1, elem=g)
             if f_max_tmp > f_max:
                 f_max = f_max_tmp
@@ -204,7 +207,8 @@ def boundCert(fun, space, lmbd, step, exclude_element=None, **kwargs):
         print("Certification sucessfull.")
     return f_max, g_max
 
-def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
+def boundCertPar(fun, bound, lmbd, step, exclude_element=None, 
+        threads=None, verbose=0):
     """ Parallelization of the `boundCert` function. This will subvide in `threads` the domain,
     this in the direction with the greatest distance between boundaries.
 
@@ -221,6 +225,8 @@ def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
     threads : int
         Number of threads to use. Default is the number of core found on
         the device, or `1` if the preceding is inapplicable.
+    verbose : int
+        Verbose each `verbose` element of the discretized space.
 
     Returns
     -------
@@ -245,12 +251,13 @@ def boundCertPar(fun, bound, lmbd, step, exclude_element=None, threads=None):
     spaces = [CompactSpace(np.array(b)) for b in bound_div]
     with Pool(processes=threads) as pool:
         res = pool.starmap(boundCert, [(fun, s, lmbd, step,
-            exclude_element) for s in spaces])
+            exclude_element,t,verbose) for t,s in enumerate(spaces)])
         print("Found max:\n",res)
         print("Certified.\n")
         return res
 
-def boundCertUserPar(fun, bounds, lmbd, step, exclude_element=None):
+def boundCertUserPar(fun, bounds, lmbd, step, exclude_element=None,
+        verbose=0):
     """ Parallelization of the `boundCert` function. One thread per provided bound.
 
     Parameters
@@ -264,6 +271,8 @@ def boundCertUserPar(fun, bounds, lmbd, step, exclude_element=None):
         Distance between first neighbors grid element.
     exclude_elem : None or numpy.ndarray
         2D-array, each element are point to exclude from the grid. Default `None`.
+    verbose : int
+        Verbose each `verbose` element of the discretized space.
 
     Returns
     -------
@@ -274,7 +283,7 @@ def boundCertUserPar(fun, bounds, lmbd, step, exclude_element=None):
     spaces = [CompactSpace(b) for b in bounds]
     with Pool(processes=threads) as pool:
         res = pool.starmap(boundCert, [(fun, space, lmbd, step,
-            exclude_element) for space in spaces])
+            exclude_element,t,verbose) for t,space in enumerate(spaces)])
         print("Found max:\n",res)
         print("Certified.\n")
         return res
