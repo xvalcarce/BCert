@@ -19,19 +19,20 @@ doctest:
     script:
         - sphinx-build -b doctest docs doctest
 
-pypi:
-    stage: deploy
-    before_script:
-        - pacman -Syu --noconfirm git twine python-numpy
-    variables:
-        USERNAME: $PYPI_USERNAME
-        PASSWORD: $PYPI_PASSWORD
-    script:
-        - python setup.py sdist
-        - twine upload --skip-existing dist/*
-    only:
-        - master
-        - pypi
+# Pypi done manually. 
+# pypi:
+#     stage: deploy
+#     before_script:
+#         - pacman -Syu --noconfirm git twine python-numpy
+#     variables:
+#         USERNAME: $PYPI_USERNAME
+#         PASSWORD: $PYPI_PASSWORD
+#     script:
+#         - python setup.py sdist
+#         - twine upload --skip-existing dist/*
+#     only:
+#         - master
+#         - pypi
 
 pages:
     stage: deploy
