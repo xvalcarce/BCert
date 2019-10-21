@@ -6,6 +6,7 @@ from example.bcert_user_parallelized import certification as usr_par_cert
 class TestSingleThread(unittest.TestCase):
     def test_bc_single_thread(self):
         try:
+            print("\n")
             simple_cert()
         except:
             self.fail("Fail to run boundCert (single thread)")
@@ -13,12 +14,14 @@ class TestSingleThread(unittest.TestCase):
 class TestMultiThread(unittest.TestCase):
     def test_bc_par(self):
         try:
+            print("\n")
             par_cert()
         except:
             self.fail("Fail to run boundCertPar (mutlithread-thread, alg generated.)")
 
     def test_bc_user_par(self):
         try:
+            print("\n")
             usr_par_cert()
         except:
             self.fail("Fail to run boundCertUserPar (mutlithread-thread, usr generated.)")
