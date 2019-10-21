@@ -37,7 +37,7 @@ def boundCert(fun, space, lmbd, step, exclude_element=None,
     f_max = kwargs.get("f_max", -np.inf)
     g_max = kwargs.get("g_max", None)
     elem = kwargs.get("elem", None)
-    grid = space.discretized(step) if depth == 0 else space.discr_element(elem, step/2)
+    grid = space.discretized(step) if depth == 0 else space.discr_element(elem, np.sqrt(fun.dim)*step/2)
     for e,g in enumerate(grid):
         if type(exclude_element) is np.ndarray:
             if np.array([(g==_).all() for _ in exclude_element]).any():
