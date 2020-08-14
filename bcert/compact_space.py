@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from itertools import product
+from itertools import product, combinations
 
 class CompactSpace(object):
     """ Compact space class.
@@ -31,7 +31,7 @@ class CompactSpace(object):
         else:
             return bound
 
-    def discretized(self, step):
+    def discretized(self, step, orientation=None):
         """ Discretized the domain (cf. `bound`) into subdomain -- hypercubes centered on points from a grid.
 
         Parameters
@@ -45,11 +45,11 @@ class CompactSpace(object):
             Discretized space i.e. grid.
         """
         if type(step) in [int,float]:
-            return self.discretized_symmetric(step)
+            return self.discretized_symmetric(step,orientation)
         elif type(step) is np.ndarray:
             return self.discretized_asymmetric(step)
 
-    def discretized_symmetric(self, step):
+    def discretized_symmetric(self, step, orientation=None):
         """ Discretized the domain. Grid with same distance between first nieghboring points.
 
         Parameters
@@ -62,8 +62,11 @@ class CompactSpace(object):
         grid : numpy.ndarray
             Discretized space i.e. grid with distance `step` between first nieghbors.
         """
-        X = np.meshgrid(*[np.arange(b[0],b[1]+step,step) for b in self.__bound])
+        X = np.meshgrid(*[np.arange(b[0]+step/2,b[1],step) for b in self.__bound])
         grid = np.array([x.ravel() for x in X]).T
+        if orientation is not None:
+            add_grid = self.orientation_grid(grid, orientation, step)
+            grid = np.concatenate((grid,add_grid))
         return grid
 
     def discretized_asymmetric(self, step):
@@ -79,7 +82,7 @@ class CompactSpace(object):
         grid : numpy.ndarray
             Discretized space i.e. grid.
         """
-        raise NotImplemented("Function not implemente -- not compatible with discr_elem currently.")
+        raise NotImplemented("Function not implemented -- not compatible with discr_elem currently.")
 
     def discr_element(self, elem, step):
         """ Create new grid from a single point.
@@ -97,7 +100,7 @@ class CompactSpace(object):
             A new grid, each element are the center `elem` shifted in all diagonal of the space.
         """
         if len(elem) != self.__dim:
-            raise ValueError("provide element is not in the same space as the original compact space")
+            raise ValueError("Provided element is not in the same space as the original compact space")
         grid = []
         new_center = step*np.array([c for c in product(range(-1,2,2), repeat=self.__dim)])
         for c in new_center:
@@ -106,4 +109,13 @@ class CompactSpace(object):
                     grid.append(c+elem)
         return np.array(grid)
 
-
+    def orientation_grid(self, grid, orientation, step):
+        s = step/2
+        ind = np.nonzero(orientation)[0]
+        c_ind = [_ for i in range(ind.size) for _ in list(combinations(ind,i+1))]
+        no = [[_ if not i in c else _*-1 for i,_ in enumerate(orientation)] for c in c_ind]
+        add_grid = []
+        for g in grid:
+            for o in no:
+                add_grid.append([_+(s*o[i]) for i,_ in enumerate(g)])
+        return np.array(add_grid)
