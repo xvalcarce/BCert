@@ -7,4 +7,7 @@ from .lipschitz import FunLipschitz
 # Main function containing the ecursive algorithm for the bound certification
 from .bcert import boundCert, boundCertPar, boundCertUserPar
 
-__version__ = "0.0.3"
+# Optimization of Lipschitz function on compact space
+from .bcert import maxCert, maxCertPar
+
+__version__ = "0.0.4"
