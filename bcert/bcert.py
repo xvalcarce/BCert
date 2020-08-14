@@ -150,7 +150,7 @@ def maxCertSingleEval(g, fun, step, guess, ret_g=False):
     if exceed_guess:
         return np.concatenate(([evol_f],g)) if ret_g else evol_f
     else:
-        return -np.inf
+        return np.concatenate(([-np.inf],g)) if ret_g else -np.inf
 
 def maxCertPar(fun, space, step, guess=-np.inf, tol=1e-2, threads=4):
     """ Parallelization of the `maxCert` function.
