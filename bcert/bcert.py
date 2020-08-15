@@ -40,7 +40,7 @@ def boundCert(fun, space, lmbd, step, exclude_element=None,
     grid = space.discretized(step) if depth == 0 else space.discr_element(elem, step/2)
     for e,g in enumerate(grid):
         if type(exclude_element) is np.ndarray:
-            if np.array([(g==_).all() for _ in exclude_element]).any():
+            if np.array([(g-step/2<=_).all() and (g+step/2>=_).all() for _ in exclude_element]).any():
                 continue
         if (verbose != 0) and (depth == 0) and not (e % verbose):
             print("{} : {}  {}".format(thread,e,g))
