@@ -20,7 +20,7 @@ def certification():
     fun = SimpleFunction()
     bound = np.array([[0,np.pi/2],[0,np.pi/2]])
     lmbd = 2
-    step = np.pi/8
+    step = np.pi/32
     exclude = np.array([[0,np.pi/2]])
 
     print("Default multithreading") 
