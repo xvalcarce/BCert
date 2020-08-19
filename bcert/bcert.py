@@ -152,7 +152,7 @@ def maxCertSingleEval(g, fun, step, guess, ret_g=False):
     else:
         return np.concatenate(([-np.inf],g)) if ret_g else -np.inf
 
-def maxCertPar(fun, space, step, guess=-np.inf, tol=1e-2, threads=4):
+def maxCertPar(fun, space, step, guess=-np.inf, tol=1e-2, threads=4, verbose=0):
     """ Parallelization of the `maxCert` function.
 
     Parameters
@@ -176,7 +176,13 @@ def maxCertPar(fun, space, step, guess=-np.inf, tol=1e-2, threads=4):
     """
     min_step = np.round(np.log2(step/tol))
     grid = space.discretized(step)
+    if verbose == 1:
+        depth == 0
     while step>tol:
+        if verbose == 1:
+            print("Entered depth {}:\n\tStep is {}, exploring {} element.".format(
+                depth,step,grid.shape[0]))
+            depth += 1
         with Pool(processes=threads) as pool:
             res = pool.starmap(maxCertSingleLevel, [(g,fun,space,step,guess) for g in grid])
         grid = np.concatenate([r for r in res if r is not False])
