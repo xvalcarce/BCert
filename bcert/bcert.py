@@ -174,7 +174,6 @@ def maxCertPar(fun, space, step, guess=-np.inf, tol=1e-2, threads=4, verbose=0):
     res : numpy.array
        Solution `f_max` and the corresponding variable.
     """
-    min_step = np.round(np.log2(step/tol))
     grid = space.discretized(step)
     if verbose == 1:
         depth = 0
@@ -188,12 +187,15 @@ def maxCertPar(fun, space, step, guess=-np.inf, tol=1e-2, threads=4, verbose=0):
         grid = np.concatenate([r for r in res if r is not False])
         step /= 2
     with Pool(processes=threads) as pool:
+        if verbose == 1:
+            print("Last depth {}:\n\tStep is {}, exploring {} element.".format(
+                depth,step,grid.shape[0]))
         res = pool.starmap(maxCertSingleEval, [(g,fun,step,guess,True) for g in grid])
     res = np.array(res)
     res = res[res[:,0].argsort()]
     sol = res[-1]
     print("Optimization terminated:")
-    print("\tMaximum value found f(x) = {}, with x = {}±{}".format(sol[0],sol[1:],step/2**min_step))
+    print("\tMaximum value found f(x) = {}, with x = {}±{}".format(sol[0],sol[1:],step/2))
     return res[-1]
 
 def boundCertPar(fun, bound, lmbd, step, exclude_element=None, 
