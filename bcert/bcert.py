@@ -177,7 +177,7 @@ def maxCertPar(fun, space, step, guess=-np.inf, tol=1e-2, threads=4, verbose=0):
     min_step = np.round(np.log2(step/tol))
     grid = space.discretized(step)
     if verbose == 1:
-        depth == 0
+        depth = 0
     while step>tol:
         if verbose == 1:
             print("Entered depth {}:\n\tStep is {}, exploring {} element.".format(
